@@ -1,36 +1,38 @@
-
 FROM arm64v8/ros:humble-ros-base-jammy
 
-# Install required system dependencies
+# Install system and Python dependencies
 RUN apt-get update && apt-get install -y \
     python3-pip \
+    python3-pyqt5 \
+    qtbase5-dev \
+    build-essential \
+    python3-pykdl \
     ros-humble-diagnostic-aggregator \
     ros-humble-rqt-robot-monitor \
     ros-humble-joint-state-publisher-gui \
     ros-humble-xacro \
-    python3-pykdl \
     && rm -rf /var/lib/apt/lists/*
 
-# Source ROS setup script
+# Upgrade pip and setuptools to prevent build issues
+RUN python3 -m pip install --upgrade pip setuptools wheel packaging sip
+
+# Source ROS setup on every shell
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 
+# Create the workspace
+RUN mkdir -p /magician_ros2_control_system_ws/src
 
-# Creat a workspace
-RUN mkdir -p magician_ros2_control_system_ws/src 
-
-
+# Copy local repo into container
 COPY . /magician_ros2_control_system_ws/src
 
-# Set the working directory
+# Set working directory
 WORKDIR /magician_ros2_control_system_ws
 
-# Install requirements 
-RUN pip3 install -r /magician_ros2_control_system_ws/src/requirements.txt
+# Install Python dependencies
+RUN pip3 install -r src/requirements.txt
 
-# Build the workspace
+# Build ROS 2 workspace
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build --symlink-install"
 
-RUN . /opt/ros/humble/setup.sh && colcon build --symlink-install
-
-
-# Set the default command to keep the container running
+# Default command
 CMD ["bash"]
