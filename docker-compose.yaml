@@ -8,7 +8,14 @@ services:
     environment:
       - DISPLAY=host.docker.internal:0
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # For X11 socket forwarding
+      - /tmp/.X11-unix:/tmp/.X11-unix  
+
+    networks:
+      - ros_network
     tty: true
     stdin_open: true
+
+networks:
+  ros_network:
+    driver: bridge
 
