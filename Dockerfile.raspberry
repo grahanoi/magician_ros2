@@ -31,7 +31,10 @@ WORKDIR /magician_ros2_control_system_ws
 # Install Python dependencies
 # RUN pip3 install -r src/requirements.txt
 
-# Build ROS 2 workspace
+# Upgrade pip and setuptools to prevent build issues
+RUN python3 -m pip install --upgrade pip setuptools wheel packaging sip
+
+# Build ROS 2 workspace with environment variable to fix setuptools issue
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && SETUPTOOLS_USE_DISTUTILS=stdlib colcon build --symlink-install"
 
 # Default command
