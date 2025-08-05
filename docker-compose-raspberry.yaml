@@ -2,7 +2,7 @@ services:
   ros_app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.raspberry
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
     networks:

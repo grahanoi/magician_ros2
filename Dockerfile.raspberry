@@ -1,0 +1,35 @@
+FROM arm64v8/ros:jazzy-ros-base-noble
+
+# Install required system dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    ros-humble-diagnostic-aggregator \
+    ros-humble-rqt-robot-monitor \
+    ros-humble-joint-state-publisher-gui \
+    ros-humble-xacro \
+    python3-pykdl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Source ROS setup script
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+
+# Creat a workspace
+RUN mkdir -p magician_ros2_control_system_ws/src 
+
+
+COPY . /magician_ros2_control_system_ws/src
+
+# Set the working directory
+WORKDIR /magician_ros2_control_system_ws
+
+# Install requirements 
+RUN pip3 install -r /magician_ros2_control_system_ws/src/requirements.txt
+
+# Build the workspace
+
+RUN . /opt/ros/humble/setup.sh && colcon build --symlink-install
+
+
+# Set the default command to keep the container running
+CMD ["bash"]
