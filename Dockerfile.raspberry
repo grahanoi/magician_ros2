@@ -29,7 +29,7 @@ COPY . /magician_ros2_control_system_ws/src
 WORKDIR /magician_ros2_control_system_ws
 
 # Install Python dependencies
-RUN pip3 install -r src/requirements.txt
+# RUN pip3 install -r src/requirements.txt
 
 # Build ROS 2 workspace
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build --symlink-install"
