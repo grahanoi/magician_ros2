@@ -31,7 +31,16 @@ COPY . /magician_ros2_control_system_ws/src
 
 # ROS-Abhängigkeiten auflösen
 RUN rosdep update && \
-    rosdep install --from-paths src --ignore-src -r -y
+    rosdep install --from-paths src --ignore-src -r -y --skip-keys="\
+        python-qt-binding \
+        rqt-gui \
+        rqt-gui-py \
+        rqt-py-common \
+        joint-state-publisher \
+        joint-state-publisher-gui \
+        rviz2 \
+        xacro \
+        tf-transformations"
 
 # Build mit colcon
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
