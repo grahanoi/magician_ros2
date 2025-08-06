@@ -7,9 +7,11 @@ services:
     environment:
       - DISPLAY=host.docker.internal:0
       - ROS_DOMAIN_ID=9
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/tmp/fastrtps_profiles.xml
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  
-
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./fastrtps_profiles.xml:/tmp/fastrtps_profiles.xml
     network_mode: host
     tty: true
     stdin_open: true
