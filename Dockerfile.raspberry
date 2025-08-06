@@ -51,22 +51,11 @@ RUN mkdir -p /magician_ros2_control_system_ws/src
 # Set working directory
 WORKDIR /magician_ros2_control_system_ws
 
-# Create and activate virtual environment
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Upgrade pip in virtual environment
-RUN pip install --upgrade pip setuptools wheel
-
 # Source ROS setup on every shell
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 
 # Copy local repo into container
 COPY . /magician_ros2_control_system_ws/src
-
-# Install Python dependencies from requirements.txt
-# Using --no-cache-dir to save space and --timeout for slow ARM builds
-RUN pip install --no-cache-dir -r src/requirements.txt
 
 # Install additional ROS2 Python packages that might be needed
 RUN pip install --no-cache-dir \
@@ -86,7 +75,6 @@ RUN apt-get update && \
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
 
 # Setup environment to use virtual environment
-RUN echo "source /opt/venv/bin/activate" >> ~/.bashrc
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 RUN echo "source /magician_ros2_control_system_ws/install/setup.bash" >> ~/.bashrc
 
