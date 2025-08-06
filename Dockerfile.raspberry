@@ -17,7 +17,7 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 # rosdep initialisieren
-RUN rosdep init && rosdep update
+RUN rosdep update
 
 # Arbeitsverzeichnis
 WORKDIR /magician_ros2_control_system_ws
