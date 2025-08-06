@@ -1,87 +1,50 @@
-# Alternative Dockerfile for Raspberry Pi 4 (ARM64)
-# Using Ubuntu base and installing ROS2 manually
-FROM ubuntu:22.04
+FROM ros:humble-ros-base
 
-# Prevent interactive prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install system dependencies
+# Systemabhängigkeiten installieren
 RUN apt-get update && apt-get install -y \
-    curl \
-    gnupg2 \
-    lsb-release \
-    software-properties-common \
     python3-pip \
-    python3-dev \
-    python3-venv \
+    python3-colcon-common-extensions \
+    python3-rosdep \
     git \
-    udev \
     build-essential \
-    cmake \
-    pkg-config \
     libffi-dev \
     libssl-dev \
-    wget \
-    locales \
+    udev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up locales
-RUN locale-gen en_US.UTF-8
+# Locale (bereits gesetzt im base image, aber zur Sicherheit)
 ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-# Add ROS2 apt repository
-RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
-
-# Install ROS2 Humble desktop
-RUN apt-get update && apt-get install -y \
-    ros-humble-desktop \
-    python3-rosdep \
-    python3-colcon-common-extensions \
-    && rm -rf /var/lib/apt/lists/*
-
-# Initialize rosdep
+# rosdep initialisieren
 RUN rosdep init && rosdep update
 
-# Create the workspace
-RUN mkdir -p /magician_ros2_control_system_ws/src
-
-# Set working directory
+# Arbeitsverzeichnis
 WORKDIR /magician_ros2_control_system_ws
 
-# Source ROS setup on every shell
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+# Kopiere requirements.txt falls vorhanden
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
-# Copy local repo into container
+# Kopiere ROS2-Repo Code
 COPY . /magician_ros2_control_system_ws/src
 
-# Install additional ROS2 Python packages that might be needed
-RUN pip install --no-cache-dir \
-    rclpy \
-    std-msgs \
-    geometry-msgs \
-    sensor-msgs \
-    tf2-ros
+# ROS-Abhängigkeiten auflösen
+RUN rosdep update && \
+    rosdep install --from-paths src --ignore-src -r -y
 
-# Install ROS dependencies
-RUN apt-get update && \
-    rosdep update && \
-    rosdep install --from-paths src --ignore-src -r -y && \
-    rm -rf /var/lib/apt/lists/*
-
-# Build the workspace
+# Build mit colcon
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
 
-# Setup environment to use virtual environment
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-RUN echo "source /magician_ros2_control_system_ws/install/setup.bash" >> ~/.bashrc
+# Setup beim Start
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
+    echo "source /magician_ros2_control_system_ws/install/setup.bash" >> /root/.bashrc
 
-# Add udev rules for USB devices (Dobot)
+# udev-Regeln (für Dobot USB)
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666"' > /etc/udev/rules.d/99-dobot.rules
 
-# Activate virtual environment by default
-ENV PATH="/opt/venv/bin:$PATH"
+# Umgebungsvariable für Tool-Typ
+ENV MAGICIAN_TOOL=none
 
-CMD ["/bin/bash"]
+# Default CMD
+CMD ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && source /magician_ros2_control_system_ws/install/setup.bash && ros2 launch dobot_bringup dobot_magician_control_system.launch.py"]
