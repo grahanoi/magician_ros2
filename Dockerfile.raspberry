@@ -66,7 +66,7 @@ COPY . /magician_ros2_control_system_ws/src
 
 # Install Python dependencies from requirements.txt
 # Using --no-cache-dir to save space and --timeout for slow ARM builds
-RUN pip install --no-cache-dir --timeout=1000 -r src/magician_ros2/requirements.txt
+RUN pip install --no-cache-dir --timeout=1000 -r src/requirements.txt
 
 # Install additional ROS2 Python packages that might be needed
 RUN pip install --no-cache-dir \
